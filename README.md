@@ -8,8 +8,9 @@ profikum itself is licenced under the GPL version 3. See LICENSE for details.
 Needed: 
 - Raspberry Pi 3 Model B+ or higher, or Banana Pi M2 Zero or higher
 - Pololu Zumo 32U4. The Arduino version should also work, but the 32U4 is assumed in the following.
+
 Steps:
-- Install profi++
+- Install profi++ ( https://github.com/langmo/profipp )
 - Install the Arduino IDE on the Raspberry: https://www.arduino.cc
 - In the Arduino IDE, install the board driver of the 32U4:
   - Open File->Preferences. Enter https://files.pololu.com/arduino/package_pololu_index.json in the "Additional Board Manager URLs" text box. Press OK.
@@ -19,7 +20,7 @@ Steps:
   - Select Sketch->Include library->Manage Libraries
   - Search and "Zumo32U4"
   - If you are asked to install missing dependencies: install them all!
-- In the Arduino IDE, upload the Arduino program (~/profipp/examples/profizumo/resources/profizumo/
+- In the Arduino IDE, upload the Arduino program ( resources/profikum_arduino/ )
 - Configure to connect to iWLAN on startup:
   - In the terminal, type ``sudo nano /etc/network/interfaces``. Add/modify the following lines:
     ``` 
@@ -38,10 +39,10 @@ Steps:
          key_mgmt=WPA-PSK
     }
 	```
-- Compile profikum
+- Compile and install profikum: ``./build_and_install_release.sh``
 - Generate the GSDML file:
-  - Run ``./profikum -e ./``
-  - Copy the GSDML (e.g. via a USB stick) to the computer of the PLC.
+  - Run ``profikum -e .``. This generates the GSDML in the current directory
+  - Copy the GSDML (e.g. via a USB stick, wifi, ...) to the computer of the PLC.
   - Start TIA Portal, install the GSDML and add it to the installed devices.
 - Raspberry Pi OS (Raspberry Pi 3 Model B+ or higher): Configure serial port/UART0:
   - Type ``sudo nano /boot/config.txt``.
@@ -66,11 +67,11 @@ Steps:
 	
 	[Service]
 	Type=idle
-  WorkingDirectory=/home/username/profikum/build
+	WorkingDirectory=/home/username/profikum/temp
 	# Wait 10s upon reboot to ensure wifi is up and running
 	ExecStartPre=/bin/sleep 10
-	# replace path to whereever you installed profizumo
-	ExecStart=/usr/bin/sudo /home/username/profikum/build/profikum -s -e ./ -i wlan0 -u /dev/ttyS3
+	# replace path to whereever you installed profikum
+	ExecStart=/usr/bin/sudo profikum -s -e ./ -i wlan0 -u /dev/ttyS3 # For BananaPi. Use /dev/ttyACM0 on an Raspberry instead
 	
 	[Install]
 	WantedBy=default.target

@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
     }
 
     // Run program
-    ZumoControl control{};
-    bool success = control.InitializeProfinet(mainNetworkInterface);
+    Profikum profikum{};
+    bool success = profikum.InitializeProfinet(mainNetworkInterface);
     if(!success)
     {
         std::cerr << "Could not initialize profinet configuration.\n";
@@ -58,12 +58,12 @@ int main(int argc, char *argv[])
     }
     if(!filename.empty())
     {
-        control.ExportGDSML(filename.c_str());
+        profikum.ExportGDSML(filename.c_str());
     }
     if(start)
     {
-        control.StartProfinet();
-        control.RunController(serial);
+        profikum.StartProfinet();
+        profikum.RunController(serial);
     }
 
 }

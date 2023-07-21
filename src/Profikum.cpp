@@ -364,7 +364,7 @@ bool Profikum::ReceiveSerial(SerialConnection& serialConnection)
     }
     return true;
 }
-void Profikum::RunController(const std::string_view& serialPort)
+void Profikum::RunController(const std::string& serialPort)
 {
     SerialConnection serialConnection{};
     while(!serialConnection.Connect(serialPort))

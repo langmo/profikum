@@ -31,9 +31,9 @@ file(REMOVE_RECURSE ${PROFIKUM_BINARY_DIR}/tmp/)
 target_compile_features(profikum PRIVATE cxx_std_17)
 
 find_package(profipp 1.0 REQUIRED)
-target_link_libraries(profiecho PUBLIC profipp)
+target_link_libraries(profikum PUBLIC profipp)
 
 install (TARGETS profikum DESTINATION bin)
-install(FILES ${PROFIECHO_BINARY_DIR}/set_network_parameters DESTINATION bin PERMISSIONS WORLD_EXECUTE)
+install(FILES ${PROFIKUM_BINARY_DIR}/set_network_parameters DESTINATION bin PERMISSIONS WORLD_EXECUTE)
 
 include (InstallRequiredSystemLibraries)
