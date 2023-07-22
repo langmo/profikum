@@ -11,29 +11,28 @@ cmake_policy(SET CMP0115 NEW)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_executable(profikum src/main.cpp)
-
 target_include_directories(profikum
   PRIVATE
   src
   resources/profikum_arduino
-  )
-
+)
 target_sources(profikum
   PRIVATE
   src/Profikum.cpp
   src/SerialConnection.cpp
 )
 
-configure_file(${PROFIKUM_SOURCE_DIR}/resources/set_network_parameters ${PROFIKUM_BINARY_DIR}/tmp/set_network_parameters COPYONLY)
-file (COPY ${PROFIKUM_BINARY_DIR}/tmp/set_network_parameters DESTINATION ${PROFIKUM_BINARY_DIR}/ FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-file(REMOVE_RECURSE ${PROFIKUM_BINARY_DIR}/tmp/)
+# Copy script which is responsible to set device's IP address upon profinet controller request to build tree.
+# Note that this is only necessary if one wants to run the build files. The install files search at the correct position.
+file (COPY ${CMAKE_INSTALL_PREFIX}/bin/profipp_network_parameters DESTINATION ${PROFIKUM_BINARY_DIR}/ FILE_PERMISSIONS WORLD_EXECUTE)
 
 target_compile_features(profikum PRIVATE cxx_std_17)
 
+# Add profinet support via profipp v1.0 or higher
 find_package(profipp 1.0 REQUIRED)
 target_link_libraries(profikum PUBLIC profipp)
 
+# Install the example application
 install (TARGETS profikum DESTINATION bin)
-install(FILES ${PROFIKUM_BINARY_DIR}/set_network_parameters DESTINATION bin PERMISSIONS WORLD_EXECUTE)
-
+# Also install any additional files which might be required due to anything compiler specific
 include (InstallRequiredSystemLibraries)
