@@ -2,9 +2,12 @@
 build/
 debug/
 install/
+
+#Logs
+*.log
+
 # Prerequisites
 *.d
-
 *.bin
 
 # Object files
