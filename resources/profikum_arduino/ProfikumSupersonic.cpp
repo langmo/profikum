@@ -49,7 +49,9 @@ void ProfikumSupersonic::OnInterrupt()
   {
     // echo received
     echoEnd_us = micros();                          // Save the end time
-    echoDuration_us = echoEnd_us - echoStart_us;        // Calculate the pulse duration
+    long dur = echoEnd_us - echoStart_us;        // Calculate the pulse duration
+    if(dur < maxTimeBetweenPulses_us)
+      echoDuration_us = dur;
   }
   lastEcho = echo;
 }
@@ -73,11 +75,12 @@ int16_t ProfikumSupersonic::GetLastDistance_mm()
 {
   cli();
   long duration = echoDuration_us;
+  echoDuration_us = 0;
   sei();
   
   if(duration<=0)
     return -1;
-  int16_t distance_mm = duration/5.82;
+  int16_t distance_mm = duration*durationToDistance;
   // Überprüfung ob gemessener Wert innerhalb der zulässingen Entfernung liegt
   if (distance_mm >= maxDistance_mm || distance_mm <= minDistance_mm) 
     return -1;

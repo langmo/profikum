@@ -30,17 +30,23 @@
 #define RIGHT_SUPERSONIC_ECHO_PIN 11 // Echo pin of the ultrasound distance sensor
 #define RIGHT_SUPERSONIC_TRIGGER_PIN 12 // Trigger pin of the ultrasound distance sensor
 
-//TODO: Change to correct pins and configure interrupts
-#define LEFT_SUPERSONIC_ECHO_PIN 11 // Echo pin of the ultrasound distance sensor
-#define LEFT_SUPERSONIC_TRIGGER_PIN 12 // Trigger pin of the ultrasound distance sensor
+#define LEFT_SUPERSONIC_ECHO_PIN 14 // Echo pin of the ultrasound distance sensor
+#define LEFT_SUPERSONIC_TRIGGER_PIN 4 // Trigger pin of the ultrasound distance sensor
 
 namespace profikum::arduino
 {
+// Calculate times for supersonic sensors
+static constexpr const double minDistance = 0.05; //m
+static constexpr const double maxDistance = 0.80; //m
+static constexpr const double speedSound = 343; // m/s
+static constexpr const long minTimeBetweenPulses_us= (long)(2 * minDistance / speedSound * 1e6);
+static constexpr const long maxTimeBetweenPulses_us= (long)(2 * maxDistance / speedSound * 1e6);
+
 static ProfikumMotors motors{};
 // accelerometer, magnetometer, and gyro
 static ProfikumImu imu{};
-static ProfikumSupersonic rightSuperSonic{RIGHT_SUPERSONIC_TRIGGER_PIN, RIGHT_SUPERSONIC_ECHO_PIN};
-static ProfikumSupersonic leftSuperSonic{LEFT_SUPERSONIC_TRIGGER_PIN, LEFT_SUPERSONIC_ECHO_PIN};
+static ProfikumSupersonic rightSuperSonic{RIGHT_SUPERSONIC_TRIGGER_PIN, RIGHT_SUPERSONIC_ECHO_PIN, minTimeBetweenPulses_us, maxTimeBetweenPulses_us};
+static ProfikumSupersonic leftSuperSonic{LEFT_SUPERSONIC_TRIGGER_PIN, LEFT_SUPERSONIC_ECHO_PIN, minTimeBetweenPulses_us, maxTimeBetweenPulses_us};
 static ProfikumEncoders encoders{};
 }
 
@@ -50,6 +56,7 @@ static ProfikumEncoders encoders{};
 ISR(PCINT0_vect)
 {
   profikum::arduino::rightSuperSonic.OnInterrupt();
+  profikum::arduino::leftSuperSonic.OnInterrupt();
   profikum::arduino::encoders.OnLeftInterrupt();
 }
 // interrupt pin 7
@@ -93,12 +100,14 @@ void ProfikumDevice::Init(void (*outputProcessor_)(com::ProfikumOutput, int16_t)
   attachInterrupt(4, interrupt4, CHANGE);
 
   // Configure hardware interrupt when echo pin changes state
-  // Echo pin 11 -> PCINT7, which is at PCMSK0, Bit 7
+  // PB7 = Echo pin 11 -> PCINT7, which is at PCMSK0, Bit 7
+  // PB3 = Echo pin 14 -> PCINT3, which is at PCMSK0, Bit 3
   // Set PCIE0 bit in the bit change interrupt control register (PCICR)
   PCICR |= (1 << PCIE0);
-  // Set PCINT7 bt (=bit 7) in the bit change enable mask (PCMSK). The first
+  // Set PCINT7 bit (=bit 7) and PCINT3 bit (=bit 3) in the bit change enable mask (PCMSK). The first
   // 8 bits are in PCMSK0, the next 8 in PCMSK1,...
   PCMSK0 |= (1 << PCINT7);
+  PCMSK0 |= (1 << PCINT3);
   
   // set global interrupt enable bits (I) in the status register (SREG), such that
   // interrupts are enabled again
@@ -106,17 +115,19 @@ void ProfikumDevice::Init(void (*outputProcessor_)(com::ProfikumOutput, int16_t)
 }
 void ProfikumDevice::ProcessInput(com::ProfikumInput command, int16_t value)
 {
+  // Note: the PLC uses a definition where front and back are switched as compared to the definition used here (and taken over from ZumoBot).
+  // We invert the logic here, explaining switching of left and right as well as signs
   switch(command)
   {
-    case com::ProfikumInput::leftMotorSetSpeed:
-      leftSpeed = value;
+    case com::ProfikumInput::rightMotorSetSpeed:
+      leftSpeed = -value;
       if(leftSpeed > MAX_SPEED)
         leftSpeed = MAX_SPEED;
       else if(leftSpeed < -MAX_SPEED)
         leftSpeed = -MAX_SPEED;
       break;
-    case com::ProfikumInput::rightMotorSetSpeed:
-      rightSpeed = value;
+    case com::ProfikumInput::leftMotorSetSpeed:
+      rightSpeed = -value;
       if(rightSpeed > MAX_SPEED)
         rightSpeed = MAX_SPEED;
       else if(rightSpeed < -MAX_SPEED)
@@ -140,6 +151,8 @@ void ProfikumDevice::Run()
   leftSuperSonic.Run();
   encoders.Run();
 
+  // Note: the PLC uses a definition where front and back are switched as compared to the definition used here (and taken over from ZumoBot).
+  // We invert the logic here, explaining switching of left and right as well as signs
   if(outputProcessor != nullptr)
   {
     imu.Read();
@@ -159,10 +172,10 @@ void ProfikumDevice::Run()
     outputProcessor(com::ProfikumOutput::rightUltrasoundDistance, rightSuperSonic.GetLastDistance_mm());
     outputProcessor(com::ProfikumOutput::leftUltrasoundDistance, leftSuperSonic.GetLastDistance_mm());
     // encoders
-    outputProcessor(com::ProfikumOutput::leftEncoderCounts, encoders.GetCountsLeft());
-    outputProcessor(com::ProfikumOutput::rightEncoderCounts, encoders.GetCountsRight());
-    outputProcessor(com::ProfikumOutput::leftEncoderCountsPerSecond, encoders.GetCountsPerSecondLeft());
-    outputProcessor(com::ProfikumOutput::rightEncoderCountsPerSecond, encoders.GetCountsPerSecondRight());
+    outputProcessor(com::ProfikumOutput::leftEncoderCounts, -encoders.GetCountsRight());
+    outputProcessor(com::ProfikumOutput::rightEncoderCounts, -encoders.GetCountsLeft());
+    outputProcessor(com::ProfikumOutput::leftEncoderCountsPerSecond, -encoders.GetCountsPerSecondRight());
+    outputProcessor(com::ProfikumOutput::rightEncoderCountsPerSecond, -encoders.GetCountsPerSecondLeft());
   }
 }
 }
