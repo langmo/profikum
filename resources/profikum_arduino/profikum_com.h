@@ -84,7 +84,8 @@ enum class ProfikumOutput: char
   magnetometerY = 'n',
   magnetometerZ = 'o',
   // Ultrasound distance
-  ultrasoundDistance = 'u',
+  rightUltrasoundDistance = 'u',
+  leftUltrasoundDistance = 'v',
   // Encoder
   leftEncoderCounts = 'l',
   rightEncoderCounts = 'r',
@@ -97,7 +98,7 @@ bool constexpr IsProfikumOutput(char v)
     ProfikumOutput::accelerationX, ProfikumOutput::accelerationY, ProfikumOutput::accelerationZ,
     ProfikumOutput::gyroX, ProfikumOutput::gyroY, ProfikumOutput::gyroZ, 
     ProfikumOutput::magnetometerX, ProfikumOutput::magnetometerY , ProfikumOutput::magnetometerZ,
-    ProfikumOutput::ultrasoundDistance,
+    ProfikumOutput::rightUltrasoundDistance, ProfikumOutput::leftUltrasoundDistance,
     ProfikumOutput::leftEncoderCounts, ProfikumOutput::rightEncoderCounts,
     ProfikumOutput::leftEncoderCountsPerSecond, ProfikumOutput::rightEncoderCountsPerSecond>;
   return TestCheck::IsValue(v);

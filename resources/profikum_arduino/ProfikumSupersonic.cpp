@@ -22,32 +22,23 @@
 
 namespace profikum::arduino
 {
-ProfikumSupersonic::ProfikumSupersonic(long minTimeBetweenPulses_us_, long maxTimeBetweenPulses_us_) : minTimeBetweenPulses_us{minTimeBetweenPulses_us_}, maxTimeBetweenPulses_us{maxTimeBetweenPulses_us_}
+ProfikumSupersonic::ProfikumSupersonic(int triggerPin_, int echoPin_, long minTimeBetweenPulses_us_, long maxTimeBetweenPulses_us_) : 
+    triggerPin{triggerPin_},
+    echoPin{echoPin_},
+    minTimeBetweenPulses_us{minTimeBetweenPulses_us_}, 
+    maxTimeBetweenPulses_us{maxTimeBetweenPulses_us_}
 {
   
 }
 void ProfikumSupersonic::Init()
 {
-  pinMode(SUPERSONIC_TRIGGER_PIN, OUTPUT);
-  pinMode(SUPERSONIC_ECHO_PIN, INPUT);
-  // Configure hardware interrupt when echo pin changes state
-  // Echo pin 11 -> PCINT7, which is at PCMSK0, Bit 7
-  // Unset global interrupt enable bits (I) in the status register (SREG), such that
-  // no interrupts will be thrown while changing configuration
-  cli();
-  // Set PCIE0 bit in the bit change interrupt control register (PCICR)
-  PCICR |= (1 << PCIE0);
-  // Set PCINT7 bt (=bit 7) in the bit change enable mask (PCMSK). The first
-  // 8 bits are in PCMSK0, the next 8 in PCMSK1,...
-  PCMSK0 |= (1 << PCINT7);
-  // set global interrupt enable bits (I) in the status register (SREG), such that
-  // interrupts are enabled again
-  sei();
+  pinMode(triggerPin, OUTPUT);
+  pinMode(echoPin, INPUT);
 }
 
 void ProfikumSupersonic::OnInterrupt()
 {  
-  bool echo = digitalRead(SUPERSONIC_ECHO_PIN);
+  bool echo = digitalRead(echoPin);
   if(!lastEcho && echo)
   {
     // start of the echo pulse
@@ -73,9 +64,9 @@ void ProfikumSupersonic::Run()
     echoStart_us = time_us;
     echoEnd_us = 0;
     // A measurement is triggered by keeping the trigger pin at least 10us up
-    digitalWrite(SUPERSONIC_TRIGGER_PIN, HIGH);
+    digitalWrite(triggerPin, HIGH);
     delayMicroseconds(12);
-    digitalWrite(SUPERSONIC_TRIGGER_PIN, LOW);
+    digitalWrite(triggerPin, LOW);
   }
 }
 int16_t ProfikumSupersonic::GetLastDistance_mm()

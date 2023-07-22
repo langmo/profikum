@@ -23,15 +23,12 @@
 
 #include <stdint.h> // int16_t
 
-#define SUPERSONIC_ECHO_PIN 11 // Echo pin of the ultrasound distance sensor
-#define SUPERSONIC_TRIGGER_PIN 12 // Trigger pin of the ultrasound distance sensor
-
 namespace profikum::arduino
 {
 class ProfikumSupersonic
 {
 public:
-  ProfikumSupersonic(long minTimeBetweenPulses_us = 16000, long maxTimeBetweenPulses_us = 32000);
+  ProfikumSupersonic(int triggerPin, int echoPin, long minTimeBetweenPulses_us = 16000, long maxTimeBetweenPulses_us = 32000);
   /**
    * Should be called before device is used.
    */
@@ -52,6 +49,8 @@ public:
    */
   int16_t GetLastDistance_mm();
 private:
+  int echoPin;
+  int triggerPin;
   volatile long echoStart_us{0};                         // Records start of echo pulse in us
   volatile long echoEnd_us{0};                           // Records end of echo pulse in us
   volatile long echoDuration_us{0};                      // Duration - difference between end and start in us

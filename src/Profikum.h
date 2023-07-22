@@ -45,7 +45,8 @@ private:
     int16_t magnetometerY{0};
     int16_t magnetometerZ{0};
     // ultrasound
-    int16_t distance{-1};
+    int16_t rightDistance{-1};
+    int16_t leftDistance{-1};
     // encoder
     int16_t leftEncoderCounts{0};
     int16_t rightEncoderCounts{0};

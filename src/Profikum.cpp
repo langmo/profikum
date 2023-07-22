@@ -73,8 +73,8 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
     device.properties.productName = "Profikum Robot";
 
     /* GSDML tag: MinDeviceInterval */
-    profinet.GetProperties().cycleTimeUs=16000;
-    device.properties.minDeviceInterval = 16*32; /* 32*1 ms */
+    profinet.GetProperties().cycleTimeUs= 8000;
+    device.properties.minDeviceInterval = 8*32; /* 8*1 ms */
     device.properties.defaultMautype = 0x10; /* Copper 100 Mbit/s Full duplex */
 
     // Motor module
@@ -188,12 +188,19 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
     ultrasoundSubmodule->properties.infoText = "Distances are measured in mm.";
     //Outputs
     //distance in mm
-    auto distanceGetCallback = [this]() -> int16_t
+    auto rightDistanceGetCallback = [this]() -> int16_t
         {
-            return distance;
+            return rightDistance;
         };
-    output = ultrasoundSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(distanceGetCallback);
-    output->properties.description = "Distance measured by ultrasound sensor in mm.";
+    output = ultrasoundSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(rightDistanceGetCallback);
+    output->properties.description = "Right distance measured by ultrasound sensor in mm.";
+
+    auto leftDistanceGetCallback = [this]() -> int16_t
+        {
+            return leftDistance;
+        };
+    output = ultrasoundSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(leftDistanceGetCallback);
+    output->properties.description = "Left distance measured by ultrasound sensor in mm.";
 
     // Encoder module
     auto encoderModuleWithPlugInfo = device.modules.Create(0x00000043, std::vector<uint16_t>{2,3,4});
@@ -414,8 +421,11 @@ bool Profikum::InterpretCommand(profikum::com::ProfikumOutput command, int16_t v
         case profikum::com::ProfikumOutput::magnetometerZ:
             magnetometerZ = value;
             return true;
-        case profikum::com::ProfikumOutput::ultrasoundDistance:
-            distance = value;
+        case profikum::com::ProfikumOutput::rightUltrasoundDistance:
+            rightDistance = value;
+            return true;
+        case profikum::com::ProfikumOutput::leftUltrasoundDistance:
+            leftDistance = value;
             return true;
         case profikum::com::ProfikumOutput::leftEncoderCounts:
             leftEncoderCounts = value;

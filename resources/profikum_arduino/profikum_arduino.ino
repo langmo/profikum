@@ -24,8 +24,10 @@
 
 // Constants
 #define LED_PIN 13
-// Which serial port to use. Set to "Serial" for communication via microUSB, and to "Serial1" for GPIO based com.
+
+// Uncomment the next line to additionally send any serial data over SERIAL_PORT_DEBUG. 
 //#define DEBUG
+// Which serial port to use. Set to "Serial" for communication via microUSB, and to "Serial1" for GPIO based com.
 #define SERIAL_PORT_DEBUG Serial
 #define SERIAL_PORT Serial1
 

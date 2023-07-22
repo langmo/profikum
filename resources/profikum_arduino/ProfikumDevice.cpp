@@ -27,12 +27,20 @@
 
 #define MAX_SPEED 400
 
+#define RIGHT_SUPERSONIC_ECHO_PIN 11 // Echo pin of the ultrasound distance sensor
+#define RIGHT_SUPERSONIC_TRIGGER_PIN 12 // Trigger pin of the ultrasound distance sensor
+
+//TODO: Change to correct pins and configure interrupts
+#define LEFT_SUPERSONIC_ECHO_PIN 11 // Echo pin of the ultrasound distance sensor
+#define LEFT_SUPERSONIC_TRIGGER_PIN 12 // Trigger pin of the ultrasound distance sensor
+
 namespace profikum::arduino
 {
 static ProfikumMotors motors{};
 // accelerometer, magnetometer, and gyro
 static ProfikumImu imu{};
-static ProfikumSupersonic superSonic{};
+static ProfikumSupersonic rightSuperSonic{RIGHT_SUPERSONIC_TRIGGER_PIN, RIGHT_SUPERSONIC_ECHO_PIN};
+static ProfikumSupersonic leftSuperSonic{LEFT_SUPERSONIC_TRIGGER_PIN, LEFT_SUPERSONIC_ECHO_PIN};
 static ProfikumEncoders encoders{};
 }
 
@@ -41,7 +49,7 @@ static ProfikumEncoders encoders{};
  */
 ISR(PCINT0_vect)
 {
-  profikum::arduino::superSonic.OnInterrupt();
+  profikum::arduino::rightSuperSonic.OnInterrupt();
   profikum::arduino::encoders.OnLeftInterrupt();
 }
 // interrupt pin 7
@@ -59,6 +67,10 @@ ProfikumDevice::ProfikumDevice()
 void ProfikumDevice::Init(void (*outputProcessor_)(com::ProfikumOutput, int16_t))
 {
   outputProcessor = outputProcessor_;
+
+  // Unset global interrupt enable bits (I) in the status register (SREG), such that
+  // no interrupts will be thrown while changing configuration
+  cli();
   
   // Init IMU sensors.
   if (!imu.Init())
@@ -72,11 +84,25 @@ void ProfikumDevice::Init(void (*outputProcessor_)(com::ProfikumOutput, int16_t)
   }
   imu.EnableDefault();
 
-  superSonic.Init();
+  rightSuperSonic.Init();
+  leftSuperSonic.Init();
   motors.Init();
   encoders.Init();
 
+  // Configure Interrupt 4 (pin 7)
   attachInterrupt(4, interrupt4, CHANGE);
+
+  // Configure hardware interrupt when echo pin changes state
+  // Echo pin 11 -> PCINT7, which is at PCMSK0, Bit 7
+  // Set PCIE0 bit in the bit change interrupt control register (PCICR)
+  PCICR |= (1 << PCIE0);
+  // Set PCINT7 bt (=bit 7) in the bit change enable mask (PCMSK). The first
+  // 8 bits are in PCMSK0, the next 8 in PCMSK1,...
+  PCMSK0 |= (1 << PCINT7);
+  
+  // set global interrupt enable bits (I) in the status register (SREG), such that
+  // interrupts are enabled again
+  sei();
 }
 void ProfikumDevice::ProcessInput(com::ProfikumInput command, int16_t value)
 {
@@ -110,7 +136,8 @@ void ProfikumDevice::Run()
   motors.SetLeftSpeed(leftSpeed);
   motors.SetRightSpeed(rightSpeed);
 
-  superSonic.Run();
+  rightSuperSonic.Run();
+  leftSuperSonic.Run();
   encoders.Run();
 
   if(outputProcessor != nullptr)
@@ -129,7 +156,8 @@ void ProfikumDevice::Run()
     outputProcessor(com::ProfikumOutput::magnetometerY, imu.m.y);
     outputProcessor(com::ProfikumOutput::magnetometerZ, imu.m.z);
     // Ultrasound distance
-    outputProcessor(com::ProfikumOutput::ultrasoundDistance, superSonic.GetLastDistance_mm());
+    outputProcessor(com::ProfikumOutput::rightUltrasoundDistance, rightSuperSonic.GetLastDistance_mm());
+    outputProcessor(com::ProfikumOutput::leftUltrasoundDistance, leftSuperSonic.GetLastDistance_mm());
     // encoders
     outputProcessor(com::ProfikumOutput::leftEncoderCounts, encoders.GetCountsLeft());
     outputProcessor(com::ProfikumOutput::rightEncoderCounts, encoders.GetCountsRight());
