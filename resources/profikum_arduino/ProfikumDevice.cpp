@@ -74,10 +74,6 @@ ProfikumDevice::ProfikumDevice()
 void ProfikumDevice::Init(void (*outputProcessor_)(com::ProfikumOutput, int16_t))
 {
   outputProcessor = outputProcessor_;
-
-  // Unset global interrupt enable bits (I) in the status register (SREG), such that
-  // no interrupts will be thrown while changing configuration
-  cli();
   
   // Init IMU sensors.
   if (!imu.Init())
@@ -95,6 +91,10 @@ void ProfikumDevice::Init(void (*outputProcessor_)(com::ProfikumOutput, int16_t)
   leftSuperSonic.Init();
   motors.Init();
   encoders.Init();
+
+  // Unset global interrupt enable bits (I) in the status register (SREG), such that
+  // no interrupts will be thrown while changing configuration
+  cli();
 
   // Configure Interrupt 4 (pin 7)
   attachInterrupt(4, interrupt4, CHANGE);

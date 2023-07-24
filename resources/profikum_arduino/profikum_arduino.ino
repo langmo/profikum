@@ -113,7 +113,7 @@ void serialOutput(profikum::com::ProfikumOutput command, int16_t value)
   SERIAL_PORT.write(profikum::com::stopByte);
 
   #ifdef DEBUG
-    SERIAL_PORT_DEBUG.write(profikum::arduino::FromProfikumOutput(command));
+    SERIAL_PORT_DEBUG.write(profikum::com::FromProfikumOutput(command));
     // Little endian to network/big endian conversion
     SERIAL_PORT_DEBUG.write((value >> 8 ) & 0xFF);
     SERIAL_PORT_DEBUG.write((value      ) & 0xFF);
