@@ -23,7 +23,7 @@ target_compile_features(profikum PRIVATE cxx_std_17)
 
 # Add thread support (needed by profi++)
 find_package(Threads REQUIRED)
-target_link_libraries(profiecho INTERFACE Threads::Threads)
+target_link_libraries(profikum INTERFACE Threads::Threads)
 
 # Add profinet support via profipp v1.0 or higher
 find_package(profipp 1.0 REQUIRED)
