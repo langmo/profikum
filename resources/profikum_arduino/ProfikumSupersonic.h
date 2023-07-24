@@ -48,6 +48,8 @@ public:
    * or if the last measurement was invalid.
    */
   int16_t GetLastDistance_mm();
+
+  const double durationToDistance {1.0e-6 * 340.0e3 / 2};
 private:
   int echoPin;
   int triggerPin;
