@@ -3,13 +3,6 @@ project (PROFIKUM VERSION 1.0.0)
 
 cmake_policy(SET CMP0115 NEW)
 
-# add the automatically determined parts of the RPATH
-# which point to directories outside the build tree to the install RPATH
-# Otherwise, the build executable will find profiecho.so, but not the installed one.
-# This seems to be some strange behavior. Also, this has to be done before any target has been defined, 
-# i.e. before add_executable(..)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
 add_executable(profikum src/main.cpp)
 target_include_directories(profikum
   PRIVATE
@@ -27,6 +20,10 @@ target_sources(profikum
 file (COPY ${CMAKE_INSTALL_PREFIX}/bin/profipp_network_parameters DESTINATION ${PROFIKUM_BINARY_DIR}/ FILE_PERMISSIONS WORLD_EXECUTE)
 
 target_compile_features(profikum PRIVATE cxx_std_17)
+
+# Add thread support (needed by profi++)
+find_package(Threads REQUIRED)
+target_link_libraries(profiecho INTERFACE Threads::Threads)
 
 # Add profinet support via profipp v1.0 or higher
 find_package(profipp 1.0 REQUIRED)
