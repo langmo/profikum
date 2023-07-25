@@ -28,35 +28,34 @@ private:
     profinet::Profinet profinet;
     
     //Outputs
-    int16_t speedLeft{0};
-    int16_t speedRight{0};
+    volatile int16_t speedLeft{0};
+    volatile int16_t speedRight{0};
     
     // Inputs
     //Acceleration
-    int16_t accelerationX{0};
-    int16_t accelerationY{0};
-    int16_t accelerationZ{0};
+    volatile int16_t accelerationX{0};
+    volatile int16_t accelerationY{0};
+    volatile int16_t accelerationZ{0};
     // Gyro 
-    int16_t gyroX{0};
-    int16_t gyroY{0};
-    int16_t gyroZ{0};
+    volatile int16_t gyroX{0};
+    volatile int16_t gyroY{0};
+    volatile int16_t gyroZ{0};
     // Magnetometer 
-    int16_t magnetometerX{0};
-    int16_t magnetometerY{0};
-    int16_t magnetometerZ{0};
+    volatile int16_t magnetometerX{0};
+    volatile int16_t magnetometerY{0};
+    volatile int16_t magnetometerZ{0};
     // ultrasound
-    int16_t rightDistance{-1};
-    int16_t leftDistance{-1};
+    volatile int16_t rightDistance{-1};
+    volatile int16_t leftDistance{-1};
     // encoder
-    int16_t leftEncoderCounts{0};
-    int16_t rightEncoderCounts{0};
-    int16_t leftEncoderCountsPerSecond{0};
-    int16_t rightEncoderCountsPerSecond{0};
+    volatile int16_t leftEncoderCounts{0};
+    volatile int16_t rightEncoderCounts{0};
+    volatile int16_t leftEncoderCountsPerSecond{0};
+    volatile int16_t rightEncoderCountsPerSecond{0};
 
-    // Parameters
-    // encoder
-    uint16_t countsPerRotation{910};
-    uint16_t wheelRadius_mm{19};
+    // Parameters encoder
+    static constexpr uint16_t countsPerRotation{910};
+    static constexpr uint16_t wheelRadius_mm{19};
 
     std::unique_ptr<profinet::ProfinetControl> profinetInstance;
 
