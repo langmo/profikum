@@ -313,8 +313,8 @@ bool Profikum::StartProfinet()
     }
     while(!IsInterfaceOnline(profinet.GetProperties().mainNetworkInterface))
     {
-        Log(profinet::logWarning, "Network interface %s not yet running. Retrying in 5s...", profinet.GetProperties().mainNetworkInterface.c_str());
-        std::this_thread::sleep_for (std::chrono::seconds(5));
+        Log(profinet::logWarning, "Network interface %s not yet running. Retrying in 2s...", profinet.GetProperties().mainNetworkInterface.c_str());
+        std::this_thread::sleep_for (std::chrono::seconds(2));
     }
     profinetInstance = profinet.Initialize(logger);
     if(!profinetInstance)
@@ -376,17 +376,13 @@ void Profikum::RunController(const std::string& serialPort)
     SerialConnection serialConnection{};
     while(!serialConnection.Connect(serialPort))
     {
-        Log(profinet::logError, "Could not establish serial connection. Retrying in 5s...");
-        std::this_thread::sleep_for (std::chrono::seconds(5));
+        Log(profinet::logError, "Could not establish serial connection. Retrying in 2s...");
+        std::this_thread::sleep_for (std::chrono::seconds(2));
     }
     while(true)
     {
         SendSerial(serialConnection);
         ReceiveSerial(serialConnection);
-
-        using namespace std::chrono_literals;
-        // TODO: Check if we need to sleep at all.
-        std::this_thread::sleep_for(50ms);
     }
 }
 
