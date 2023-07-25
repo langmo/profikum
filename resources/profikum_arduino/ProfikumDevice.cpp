@@ -144,9 +144,33 @@ void ProfikumDevice::ProcessInput(com::ProfikumInput command, int16_t value)
 
 void ProfikumDevice::Run()
 {
-  motors.SetLeftSpeed(leftSpeed);
-  motors.SetRightSpeed(rightSpeed);
+  static double s = 1.0;
+  motors.SetLeftSpeed(s*leftSpeed);
+  motors.SetRightSpeed(1/s*rightSpeed);
+  
+  static int16_t lastLeft = 0;
+  static int16_t lastRight = 0;
+  double Delta_v = 2.0*(lastLeft-lastRight)/(lastLeft + lastRight);
+  int16_t leftObs = encoders.GetCountsPerSecondLeft();
+  int16_t rightObs = encoders.GetCountsPerSecondRight();
+  double Delta_vObs = 2.0*(leftObs-rightObs)/(leftObs + rightObs);
+  long time_us = micros();
+  static long lastTime_us = 0;
 
+  if(lastTime_us> 0 && abs(lastLeft+lastRight)/2.0 > 10 && abs(leftObs+rightObs)>10)
+  {
+    s += 1/5.0 * (Delta_v-Delta_vObs)*(time_us-lastTime_us)*1.0e-6;
+  
+    if(s>3./2.)
+      s=1.5;
+    else if(s<2./3.)
+      s= 2./3.;
+  }
+  lastTime_us = time_us;
+
+  lastLeft = leftSpeed;
+  lastRight = rightSpeed;
+  
   rightSuperSonic.Run();
   leftSuperSonic.Run();
   encoders.Run();
@@ -174,8 +198,8 @@ void ProfikumDevice::Run()
     // encoders
     outputProcessor(com::ProfikumOutput::leftEncoderCounts, -encoders.GetCountsRight());
     outputProcessor(com::ProfikumOutput::rightEncoderCounts, -encoders.GetCountsLeft());
-    outputProcessor(com::ProfikumOutput::leftEncoderCountsPerSecond, -encoders.GetCountsPerSecondRight());
-    outputProcessor(com::ProfikumOutput::rightEncoderCountsPerSecond, -encoders.GetCountsPerSecondLeft());
+    outputProcessor(com::ProfikumOutput::leftEncoderCountsPerSecond, -rightObs);
+    outputProcessor(com::ProfikumOutput::rightEncoderCountsPerSecond, -leftObs);
   }
 }
 }
