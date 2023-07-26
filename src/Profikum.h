@@ -5,6 +5,7 @@
 
 #include "Profinet.h"
 #include "profikum_com.h"
+#include <mutex>
 
 class SerialConnection;
 
@@ -25,13 +26,13 @@ private:
     profinet::LoggerType logger;
     void Log(profinet::LogLevel logLevel, const char* format, ...) noexcept;    
     bool profinetInitialized{false};
-    profinet::Profinet profinet;
+    profinet::Profinet profinet{};
     
-    //Outputs
-    volatile int16_t speedLeft{0};
-    volatile int16_t speedRight{0};
+    //Inputs
+    volatile int16_t speedLeft{INT16_MAX};
+    volatile int16_t speedRight{INT16_MAX};
     
-    // Inputs
+    // Outputs
     //Acceleration
     volatile int16_t accelerationX{0};
     volatile int16_t accelerationY{0};
@@ -48,14 +49,10 @@ private:
     volatile int16_t rightDistance{-1};
     volatile int16_t leftDistance{-1};
     // encoder
-    volatile int16_t leftEncoderCounts{0};
-    volatile int16_t rightEncoderCounts{0};
-    volatile int16_t leftEncoderCountsPerSecond{0};
-    volatile int16_t rightEncoderCountsPerSecond{0};
-
-    // Parameters encoder
-    static constexpr uint16_t countsPerRotation{910};
-    static constexpr uint16_t wheelRadius_mm{19};
+    volatile int16_t leftEncoderMillimeters{0};
+    volatile int16_t rightEncoderMillimeters{0};
+    volatile int16_t leftEncoderMillimetersPerSecond{0};
+    volatile int16_t rightEncoderMillimetersPerSecond{0};
 
     std::unique_ptr<profinet::ProfinetControl> profinetInstance;
 
@@ -64,6 +61,9 @@ private:
     bool InterpretCommand(profikum::com::ProfikumOutput command, int16_t value);
 
     static bool IsInterfaceOnline(std::string interface);
+
+    // Lock
+    std::mutex mutex{};
 };
 
 #endif
