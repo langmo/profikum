@@ -25,8 +25,6 @@
 
 #include <Arduino.h>
 
-#define MAX_SPEED 400
-
 #define RIGHT_SUPERSONIC_ECHO_PIN 11 // Echo pin of the ultrasound distance sensor
 #define RIGHT_SUPERSONIC_TRIGGER_PIN 12 // Trigger pin of the ultrasound distance sensor
 
@@ -113,7 +111,7 @@ void ProfikumDevice::Init(void (*outputProcessor_)(com::ProfikumOutput, int16_t)
   // interrupts are enabled again
   sei();
 }
-void ProfikumDevice::ProcessInput(com::ProfikumInput command, int16_t value)
+bool ProfikumDevice::ProcessInput(com::ProfikumInput command, int16_t value)
 {
   // Note: the PLC uses a definition where front and back are switched as compared to the definition used here (and taken over from ZumoBot).
   // We invert the logic here, explaining switching of left and right as well as signs
@@ -121,22 +119,16 @@ void ProfikumDevice::ProcessInput(com::ProfikumInput command, int16_t value)
   {
     case com::ProfikumInput::rightMotorSetSpeed:
       leftSpeed = -value;
-      if(leftSpeed > MAX_SPEED)
-        leftSpeed = MAX_SPEED;
-      else if(leftSpeed < -MAX_SPEED)
-        leftSpeed = -MAX_SPEED;
-      break;
+      return true;
     case com::ProfikumInput::leftMotorSetSpeed:
       rightSpeed = -value;
-      if(rightSpeed > MAX_SPEED)
-        rightSpeed = MAX_SPEED;
-      else if(rightSpeed < -MAX_SPEED)
-        rightSpeed = -MAX_SPEED;
-      break;
+      return true;
     case com::ProfikumInput::error:
       leftSpeed = 0;
       rightSpeed = 0;
-      break;
+      return false;
+    default:
+      return false;
   }
 }
 

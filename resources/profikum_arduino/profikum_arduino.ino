@@ -21,6 +21,7 @@
 #include "profikum_com.h"
 #include <stdint.h>
 #include <Wire.h>
+#include <PololuBuzzer.h>
 
 // Constants
 #define LED_PIN 13
@@ -36,6 +37,9 @@ void serialOutput(profikum::com::ProfikumOutput command, int value);
 
 // Global controller object.
 profikum::arduino::ProfikumDevice controller{};
+
+// Buzzer
+PololuBuzzer buzzer;
 
 void setup()
 {
@@ -57,6 +61,9 @@ void loop()
   receiveSerial();
 }
 
+const char connectSound[] PROGMEM = "!C8E32";
+const char disconnectSound[] PROGMEM = "!E32C4";
+
 /*
   Called whenever new data comes in the hardware serial RX. This
   routine is run between each time loop() runs.
@@ -67,7 +74,10 @@ void receiveSerial()//serialEvent()
   static char command = 'e';
   static int firstMessage = 0;
   static int secondMessage = 0;
-
+  static bool online = false;
+  static long lastTimeReceived_us = 0;
+  
+  bool anyComplete = false; 
   while(SERIAL_PORT.available()>=1)
   { 
     int val = SERIAL_PORT.read();
@@ -97,8 +107,28 @@ void receiveSerial()//serialEvent()
       // get the value (one 16bit int)
       // network endianess is big endian, Arduino uses little endian
       int16_t value = (firstMessage << 8) | secondMessage;
-      controller.ProcessInput(profikum::com::ToProfikumInput(command), value);
+      anyComplete |= controller.ProcessInput(profikum::com::ToProfikumInput(command), value);
     }
+  }
+
+  // Check if we are still connected.
+  long time_us = micros();
+  if(anyComplete)
+  {
+    lastTimeReceived_us = time_us;
+    if(!online)
+    {
+      online = true;
+      buzzer.playFromProgramSpace(connectSound);
+    }
+  }
+  else if(online && time_us-lastTimeReceived_us > 500e3)
+  {
+    // stop motor
+    controller.ProcessInput(profikum::com::ProfikumInput::error, 0);
+    
+    online = false;
+    buzzer.playFromProgramSpace(disconnectSound);
   }
 }
 /**

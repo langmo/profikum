@@ -30,7 +30,7 @@ class ProfikumDevice
 {
 public:
   ProfikumDevice();
-  void ProcessInput(com::ProfikumInput command, int16_t value);
+  bool ProcessInput(com::ProfikumInput command, int16_t value);
   void Run();
   /**
    * Initializes the controller.
