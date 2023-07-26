@@ -43,8 +43,8 @@ static constexpr const long maxTimeBetweenPulses_us= (long)(2 * maxDistance / sp
 static ProfikumMotors motors{};
 // accelerometer, magnetometer, and gyro
 static ProfikumImu imu{};
-static ProfikumSupersonic rightSuperSonic{RIGHT_SUPERSONIC_TRIGGER_PIN, RIGHT_SUPERSONIC_ECHO_PIN, minTimeBetweenPulses_us, maxTimeBetweenPulses_us};
-static ProfikumSupersonic leftSuperSonic{LEFT_SUPERSONIC_TRIGGER_PIN, LEFT_SUPERSONIC_ECHO_PIN, minTimeBetweenPulses_us, maxTimeBetweenPulses_us};
+static ProfikumSupersonic leftSuperSonic{RIGHT_SUPERSONIC_TRIGGER_PIN, RIGHT_SUPERSONIC_ECHO_PIN, minTimeBetweenPulses_us, maxTimeBetweenPulses_us};
+static ProfikumSupersonic rightSuperSonic{LEFT_SUPERSONIC_TRIGGER_PIN, LEFT_SUPERSONIC_ECHO_PIN, minTimeBetweenPulses_us, maxTimeBetweenPulses_us};
 static ProfikumEncoders encoders{};
 }
 
@@ -113,15 +113,13 @@ void ProfikumDevice::Init(void (*outputProcessor_)(com::ProfikumOutput, int16_t)
 }
 bool ProfikumDevice::ProcessInput(com::ProfikumInput command, int16_t value)
 {
-  // Note: the PLC uses a definition where front and back are switched as compared to the definition used here (and taken over from ZumoBot).
-  // We invert the logic here, explaining switching of left and right as well as signs
   switch(command)
   {
     case com::ProfikumInput::rightMotorSetSpeed:
-      leftSpeed = -value;
+      rightSpeed = value;
       return true;
     case com::ProfikumInput::leftMotorSetSpeed:
-      rightSpeed = -value;
+      leftSpeed = value;
       return true;
     case com::ProfikumInput::error:
       leftSpeed = 0;
@@ -174,8 +172,6 @@ void ProfikumDevice::Run()
   leftSuperSonic.Run();
   encoders.Run();
 
-  // Note: the PLC uses a definition where front and back are switched as compared to the definition used here (and taken over from ZumoBot).
-  // We invert the logic here, explaining switching of left and right as well as signs
   if(outputProcessor != nullptr)
   {
     imu.Read();
@@ -195,10 +191,10 @@ void ProfikumDevice::Run()
     outputProcessor(com::ProfikumOutput::rightUltrasoundDistance, rightSuperSonic.GetLastDistance_mm());
     outputProcessor(com::ProfikumOutput::leftUltrasoundDistance, leftSuperSonic.GetLastDistance_mm());
     // encoders
-    outputProcessor(com::ProfikumOutput::leftEncoderMillimeters, -encoders.GetMillimetersRight());
-    outputProcessor(com::ProfikumOutput::rightEncoderMillimeters, -encoders.GetMillimetersLeft());
-    outputProcessor(com::ProfikumOutput::leftEncoderMillimetersPerSecond, -rightObs);
-    outputProcessor(com::ProfikumOutput::rightEncoderMillimetersPerSecond, -leftObs);
+    outputProcessor(com::ProfikumOutput::leftEncoderMillimeters, encoders.GetMillimetersLeft());
+    outputProcessor(com::ProfikumOutput::rightEncoderMillimeters, encoders.GetMillimetersRight());
+    outputProcessor(com::ProfikumOutput::leftEncoderMillimetersPerSecond, leftObs);
+    outputProcessor(com::ProfikumOutput::rightEncoderMillimetersPerSecond, rightObs);
   }
 }
 }
