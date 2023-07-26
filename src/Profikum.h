@@ -63,7 +63,7 @@ private:
     static bool IsInterfaceOnline(std::string interface);
 
     // Lock
-    std::mutex mutex{};
+    //std::mutex mutex{};
 };
 
 #endif
