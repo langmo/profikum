@@ -109,24 +109,24 @@ void ProfikumEncoders::Init()
   // Note: Right interrupt already attached...
 }
 
-int16_t ProfikumEncoders::GetCountsLeft()
+int16_t ProfikumEncoders::GetMillimetersLeft()
 {
-    return totalCountsLeft;
+    return static_cast<int16_t>(2*pi * wheelRadius_mm*totalCountsLeft/countsPerRotation);
 }
 
-int16_t ProfikumEncoders::GetCountsRight()
+int16_t ProfikumEncoders::GetMillimetersRight()
 {
-    return totalCountsRight;
+    return static_cast<int16_t>(2*pi * wheelRadius_mm*totalCountsRight/countsPerRotation);
 }
 
-int16_t ProfikumEncoders::GetCountsPerSecondLeft()
+int16_t ProfikumEncoders::GetMillimetersPerSecondLeft()
 {
-    return countsPerSecondLeft;
+    return static_cast<int16_t>(2*pi * wheelRadius_mm*countsPerSecondLeft/countsPerRotation);
 }
 
-int16_t ProfikumEncoders::GetCountsPerSecondRight()
+int16_t ProfikumEncoders::GetMillimetersPerSecondRight()
 {
-    return countsPerSecondRight;
+    return static_cast<int16_t>(2*pi * wheelRadius_mm*countsPerSecondRight/countsPerRotation);
 }
 void ProfikumEncoders::Run()
 {

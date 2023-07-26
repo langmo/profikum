@@ -55,14 +55,14 @@ public:
      * The count is returned as a signed 16-bit integer.  When the count goes
      * over 32767, it will overflow down to -32768.  When the count goes below
      * -32768, it will overflow up to 32767. */
-    int16_t GetCountsLeft();
+    int16_t GetMillimetersLeft();
 
     /*! This function is just like getCountsLeft() except it applies to the
      *  right-side encoder. */
-    int16_t GetCountsRight();
+    int16_t GetMillimetersRight();
 
-    int16_t GetCountsPerSecondLeft();
-    int16_t GetCountsPerSecondRight();
+    int16_t GetMillimetersPerSecondLeft();
+    int16_t GetMillimetersPerSecondRight();
     void Run();
 
     /*! This function returns true if an error was detected on the left-side
@@ -109,6 +109,10 @@ private:
     int16_t countsPerSecondLeft{0};
     int16_t countsPerSecondRight{0};
     long lastRun_us{0};
+
+    static constexpr uint16_t countsPerRotation{910};
+    static constexpr uint16_t wheelRadius_mm{19};
+    static constexpr double pi{3.141};
 };
 }
 #endif

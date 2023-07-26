@@ -151,8 +151,8 @@ void ProfikumDevice::Run()
   static int16_t lastLeft = 0;
   static int16_t lastRight = 0;
   double Delta_v = 2.0*(lastLeft-lastRight)/(lastLeft + lastRight);
-  int16_t leftObs = encoders.GetCountsPerSecondLeft();
-  int16_t rightObs = encoders.GetCountsPerSecondRight();
+  int16_t leftObs = encoders.GetMillimetersPerSecondLeft();
+  int16_t rightObs = encoders.GetMillimetersPerSecondRight();
   double Delta_vObs = 2.0*(leftObs-rightObs)/(leftObs + rightObs);
   long time_us = micros();
   static long lastTime_us = 0;
@@ -196,10 +196,10 @@ void ProfikumDevice::Run()
     outputProcessor(com::ProfikumOutput::rightUltrasoundDistance, rightSuperSonic.GetLastDistance_mm());
     outputProcessor(com::ProfikumOutput::leftUltrasoundDistance, leftSuperSonic.GetLastDistance_mm());
     // encoders
-    outputProcessor(com::ProfikumOutput::leftEncoderCounts, -encoders.GetCountsRight());
-    outputProcessor(com::ProfikumOutput::rightEncoderCounts, -encoders.GetCountsLeft());
-    outputProcessor(com::ProfikumOutput::leftEncoderCountsPerSecond, -rightObs);
-    outputProcessor(com::ProfikumOutput::rightEncoderCountsPerSecond, -leftObs);
+    outputProcessor(com::ProfikumOutput::leftEncoderMillimeters, -encoders.GetMillimetersRight());
+    outputProcessor(com::ProfikumOutput::rightEncoderMillimeters, -encoders.GetMillimetersLeft());
+    outputProcessor(com::ProfikumOutput::leftEncoderMillimetersPerSecond, -rightObs);
+    outputProcessor(com::ProfikumOutput::rightEncoderMillimetersPerSecond, -leftObs);
   }
 }
 }
