@@ -41,6 +41,14 @@ private:
   //Outputs
   int16_t leftSpeed{0};
   int16_t rightSpeed{0};
+  static constexpr int16_t maxMotorRaw{400};
+  static constexpr int16_t maxMotorSpeed{60}; // mm/s
+  double leftMotorScaling{1.0};
+  double rightMotorScaling{1.0};
+  static constexpr double maxScaling{2.0};
+  static constexpr double minScaling{0.5};
+  static constexpr double scalingLearnConstant{1.0/maxMotorSpeed/3}; // in 1/mm
+  long lastTime_us{0};
   void (*outputProcessor)(com::ProfikumOutput, int16_t) {nullptr};
 };
 }

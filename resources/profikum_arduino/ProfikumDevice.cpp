@@ -144,33 +144,40 @@ void ProfikumDevice::ProcessInput(com::ProfikumInput command, int16_t value)
 
 void ProfikumDevice::Run()
 {
-  static double s = 1.0;
-  motors.SetLeftSpeed(s*leftSpeed);
-  motors.SetRightSpeed(1/s*rightSpeed);
-  
-  static int16_t lastLeft = 0;
-  static int16_t lastRight = 0;
-  double Delta_v = 2.0*(lastLeft-lastRight)/(lastLeft + lastRight);
+  long time_us = micros();
+
+  // Read current speed of motors
   int16_t leftObs = encoders.GetMillimetersPerSecondLeft();
   int16_t rightObs = encoders.GetMillimetersPerSecondRight();
-  double Delta_vObs = 2.0*(leftObs-rightObs)/(leftObs + rightObs);
-  long time_us = micros();
-  static long lastTime_us = 0;
 
-  if(lastTime_us> 0 && abs(lastLeft+lastRight)/2.0 > 10 && abs(leftObs+rightObs)>10)
+  // Inner control loop ensuring that the motor speed converges to the set speed
+  if(lastTime_us > 0)
   {
-    s += 1/5.0 * (Delta_v-Delta_vObs)*(time_us-lastTime_us)*1.0e-6;
-  
-    if(s>3./2.)
-      s=1.5;
-    else if(s<2./3.)
-      s= 2./3.;
+    double dt = (time_us - lastTime_us)*1.0e-6; // in s
+    if(abs(leftSpeed) > 0 && abs(leftObs) > 0)
+    {
+      leftMotorScaling += scalingLearnConstant * (leftSpeed - leftObs)*dt;
+      if(leftMotorScaling > maxScaling)
+        leftMotorScaling = maxScaling;
+      else if(leftMotorScaling < minScaling)
+        leftMotorScaling = minScaling;
+    }
+    if(abs(rightSpeed) > 0 && abs(rightObs) > 0)
+    {
+      rightMotorScaling += scalingLearnConstant * (rightSpeed - rightObs)*dt;
+      if(rightMotorScaling > maxScaling)
+        rightMotorScaling = maxScaling;
+      else if(rightMotorScaling < minScaling)
+        rightMotorScaling = minScaling;
+    }
   }
   lastTime_us = time_us;
 
-  lastLeft = leftSpeed;
-  lastRight = rightSpeed;
-  
+  // Set motor speed
+  motors.SetLeftSpeed(leftMotorScaling*leftSpeed * maxMotorRaw / maxMotorSpeed);
+  motors.SetRightSpeed(rightMotorScaling*rightSpeed * maxMotorRaw / maxMotorSpeed);
+
+  // Run sensors
   rightSuperSonic.Run();
   leftSuperSonic.Run();
   encoders.Run();
