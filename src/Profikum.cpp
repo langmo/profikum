@@ -73,7 +73,7 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
     device.properties.productName = "Profikum Robot";
 
     /* GSDML tag: MinDeviceInterval */
-    profinet.GetProperties().cycleTimeUs= 8000;
+    profinet.GetProperties().cycleTimeUs= 16000;
     device.properties.minDeviceInterval = 32*32; /* 32 ms. One "unit" corresponds to 1/32 ms */
     device.properties.defaultMautype = 0x10; /* Copper 100 Mbit/s Full duplex */
 
@@ -90,7 +90,7 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
     // Inputs
     auto leftSpeedSetCallback = [this](int16_t value) -> void
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             speedLeft = value;
         };
     profinet::Input* left = motorSubmodule->inputs.Create<int16_t, sizeof(int16_t)>(leftSpeedSetCallback);
@@ -98,7 +98,7 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
 
     auto rightSpeedSetCallback = [this](int16_t value) -> void
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             speedRight = value;
         };
     profinet::Input* right = motorSubmodule->inputs.Create<int16_t, sizeof(int16_t)>(rightSpeedSetCallback);
@@ -117,21 +117,21 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
     accelerationSubmodule->properties.infoText = "Acceleration sensor";
     auto accelerationXGetCallback = [this]() -> int16_t
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             return accelerationX;
         };
     profinet::Output* output = accelerationSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(accelerationXGetCallback);
     output->properties.description = "Acceleration in X direction";
     auto accelerationYGetCallback = [this]() -> int16_t
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             return accelerationY;
         };
     output = accelerationSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(accelerationYGetCallback);
     output->properties.description = "Acceleration in Y direction";
     auto accelerationZGetCallback = [this]() -> int16_t
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             return accelerationZ;
         };
     output = accelerationSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(accelerationZGetCallback);
@@ -142,21 +142,21 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
     gyroSubmodule->properties.infoText = "Gyro sensor";
     auto gyroXGetCallback = [this]() -> int16_t
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             return gyroX;
         };
     output = gyroSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(gyroXGetCallback);
     output->properties.description = "Gyro in X direction";
     auto gyroYGetCallback = [this]() -> int16_t
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             return gyroY;
         };
     output = gyroSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(gyroYGetCallback);
     output->properties.description = "Gyro in Y direction";
     auto gyroZGetCallback = [this]() -> int16_t
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             return gyroZ;
         };
     output = gyroSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(gyroZGetCallback);
@@ -167,21 +167,21 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
     magnetometerSubmodule->properties.infoText = "Magnetormeter sensor";
     auto magnetometerXGetCallback = [this]() -> int16_t
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             return magnetometerX;
         };
     output = magnetometerSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(magnetometerXGetCallback);
     output->properties.description = "Magnetometer in X direction";
     auto magnetometerYGetCallback = [this]() -> int16_t
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             return magnetometerY;
         };
     output = magnetometerSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(magnetometerYGetCallback);
     output->properties.description = "Magnetometer in Y direction";
     auto magnetometerZGetCallback = [this]() -> int16_t
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             return magnetometerZ;
         };
     output = magnetometerSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(magnetometerZGetCallback);
@@ -201,7 +201,7 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
     //distance in mm
     auto rightDistanceGetCallback = [this]() -> int16_t
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             return rightDistance;
         };
     output = ultrasoundSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(rightDistanceGetCallback);
@@ -209,7 +209,7 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
 
     auto leftDistanceGetCallback = [this]() -> int16_t
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             return leftDistance;
         };
     output = ultrasoundSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(leftDistanceGetCallback);
@@ -228,14 +228,14 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
     //Outputs total travelled distance
     auto leftMillimetersGetCallback = [this]() -> int16_t
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             return leftEncoderMillimeters;
         };
     output = encoderSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(leftMillimetersGetCallback);
     output->properties.description = "Total distance, in mm, travelled by the left motor, as measured by the encoder.";
     auto rightMillimetersGetCallback = [this]() -> int16_t
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             return rightEncoderMillimeters;
         };
     output = encoderSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(rightMillimetersGetCallback);
@@ -244,14 +244,14 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
     // outputs speed
     auto leftSpeedGetCallback = [this]() -> int16_t
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             return leftEncoderMillimetersPerSecond;
         };
     output = encoderSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(leftSpeedGetCallback);
     output->properties.description = "Speed of left wheel, in mm/s, as measured by encoder.";
     auto rightSpeedGetCallback = [this]() -> int16_t
         {
-            std::unique_lock lock{mutex};
+            //std::unique_lock lock{mutex};
             return rightEncoderMillimetersPerSecond;
         };
     output = encoderSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(rightSpeedGetCallback);
@@ -312,7 +312,7 @@ bool Profikum::SendSerial(SerialConnection& serialConnection)
     int16_t speedLeftTemp;
     int16_t speedRightTemp;
     {
-        std::unique_lock lock{mutex};
+        //std::unique_lock lock{mutex};
         speedLeftTemp = speedLeft;
         speedLeft = INT16_MAX;
         speedRightTemp = speedRight;
@@ -383,14 +383,14 @@ void Profikum::RunController(const std::string& serialPort)
     {
         SendSerial(serialConnection);
         ReceiveSerial(serialConnection);
-        // Sleep for 5ms, just to don't block the profinet stack thread completely.
-        std::this_thread::sleep_for (std::chrono::milliseconds(5));
+        // Sleep for 20ms, just to don't block the profinet stack thread completely.
+        std::this_thread::sleep_for (std::chrono::milliseconds(20));
     }
 }
 
 bool Profikum::InterpretCommand(profikum::com::ProfikumOutput command, int16_t value)
 {
-    std::unique_lock lock{mutex};
+    //std::unique_lock lock{mutex};
     switch(command)
     {
         case profikum::com::ProfikumOutput::accelerationX:
