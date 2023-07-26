@@ -29,8 +29,8 @@ private:
     profinet::Profinet profinet{};
     
     //Inputs
-    volatile int16_t speedLeft{INT16_MAX};
-    volatile int16_t speedRight{INT16_MAX};
+    volatile int16_t speedLeft{0};
+    volatile int16_t speedRight{0};
     
     // Outputs
     //Acceleration
