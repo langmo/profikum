@@ -53,7 +53,7 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
     device.properties.deviceProductFamily = "robots";
     // profinet name
     device.properties.stationName = "profikum";        
-    device.properties.numSlots = 6;
+    device.properties.numSlots = 7;
     
     // Current software version of device.
     device.properties.swRevMajor = 0;
@@ -105,7 +105,7 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
     right->properties.description = "Speed of right motor, in mm/s. Max. is about +-60mm/s, but depends on the specific motor, battery levels, ...";
     
     // IMU module
-    auto imuModuleWithPlugInfo = device.modules.Create(0x00000041, std::vector<uint16_t>{2,3,4});
+    auto imuModuleWithPlugInfo = device.modules.Create(0x00000041, std::vector<uint16_t>{2,3,4,5,6,7});
     if(!imuModuleWithPlugInfo)
         return false;
     auto& [imuPlugInfo, imuModule]{*imuModuleWithPlugInfo};
@@ -188,7 +188,7 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
     output->properties.description = "Magnetometer in Z direction";
 
     // Ultrasound module
-    auto ultrasoundModuleWithPlugInfo = device.modules.Create(0x00000042, std::vector<uint16_t>{2,3,4});
+    auto ultrasoundModuleWithPlugInfo = device.modules.Create(0x00000042, std::vector<uint16_t>{2,3,4,5,6,7});
     if(!ultrasoundModuleWithPlugInfo)
         return false;
     auto& [ultrasoundPlugInfo, ultrasoundModule]{*ultrasoundModuleWithPlugInfo};
@@ -216,7 +216,7 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
     output->properties.description = "Left distance measured by ultrasound sensor in mm.";
 
     // Encoder module
-    auto encoderModuleWithPlugInfo = device.modules.Create(0x00000043, std::vector<uint16_t>{2,3,4});
+    auto encoderModuleWithPlugInfo = device.modules.Create(0x00000043, std::vector<uint16_t>{2,3,4,5,6,7});
     if(!encoderModuleWithPlugInfo)
         return false;
     auto& [encoderPlugInfo, encoderModule]{*encoderModuleWithPlugInfo};
@@ -256,6 +256,43 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
         };
     output = encoderSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(rightSpeedGetCallback);
     output->properties.description = "Speed of right wheel, in mm/s, as measured by encoder.";
+
+    // Debug module
+    auto debugModuleWithPlugInfo = device.modules.Create(0x00000092, std::vector<uint16_t>{2,3,4,5,6,7});
+    if(!debugModuleWithPlugInfo)
+        return false;
+    auto& [debugPlugInfo, debugModule]{*debugModuleWithPlugInfo};
+    debugModule.properties.name = "Debug";
+    debugModule.properties.infoText = "Additional information for debugging.";
+    profinet::Submodule* debugSubmodule = debugModule.submodules.Create(0x00000192);
+    debugSubmodule->properties.name = "Debug";
+    debugSubmodule->properties.infoText = "Additional information for debugging.";
+    //Outputs
+    auto scalingLeftMotorGetCallback = [this]() -> int16_t
+        {
+            //std::unique_lock lock{mutex};
+            return scalingLeftMotor;
+        };
+    output = debugSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(scalingLeftMotorGetCallback);
+    output->properties.description = "Scaling of the left motor speed, in %.";
+
+    auto scalingRightMotorGetCallback = [this]() -> int16_t
+        {
+            //std::unique_lock lock{mutex};
+            return scalingRightMotor;
+        };
+    output = debugSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(scalingRightMotorGetCallback);
+    output->properties.description = "Scaling of the right motor speed, in %.";
+
+    auto scalingDiffMotorGetCallback = [this]() -> int16_t
+        {
+            //std::unique_lock lock{mutex};
+            return scalingDiffMotor;
+        };
+    output = debugSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(scalingDiffMotorGetCallback);
+    output->properties.description = "Scaling of the difference of the motor speeds, in %.";
+
+
 
     profinetInitialized = true;
     return true;
@@ -437,6 +474,15 @@ bool Profikum::InterpretCommand(profikum::com::ProfikumOutput command, int16_t v
             return true;
         case profikum::com::ProfikumOutput::rightEncoderMillimetersPerSecond:
             rightEncoderMillimetersPerSecond = value;
+            return true;
+        case profikum::com::ProfikumOutput::scalingLeftMotor:
+            scalingLeftMotor = value;
+            return true;
+        case profikum::com::ProfikumOutput::scalingRightMotor:
+            scalingRightMotor = value;
+            return true;
+        case profikum::com::ProfikumOutput::scalingDiffMotor:
+            scalingDiffMotor = value;
             return true;
         default:
             return false;

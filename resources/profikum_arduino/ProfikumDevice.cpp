@@ -134,6 +134,8 @@ bool ProfikumDevice::ProcessInput(com::ProfikumInput command, int16_t value)
 
 void ProfikumDevice::Run()
 {
+  // Anti wind-up: Only learn correction factors for motors if their input isn't saturated.
+  static bool lastSaturated{false};
   long time_ms = millis();
 
   // Read current speed of motors
@@ -141,9 +143,11 @@ void ProfikumDevice::Run()
   int16_t rightObs = encoders.GetMillimetersPerSecondRight();
 
   // Inner control loop ensuring that the motor speed converges to the set speed
-  if(lastTime_ms > 0)
+  double dt = (time_ms - lastTime_ms)*1.0e-3; // in s
+  if(lastTime_ms > 0 && !lastSaturated)
   {
-    double dt = (time_ms - lastTime_ms)*1.0e-3; // in s
+    // Speed of a motor varies depending on hardware, conitions, ...
+    // Learn a scaling constant such that motor speeds converge to a constant setpoint
     if(abs(leftSpeed) > 0 && abs(leftObs) > 0)
     {
       leftMotorScaling += scalingLearnConstant * (leftSpeed - leftObs)*dt;
@@ -160,12 +164,28 @@ void ProfikumDevice::Run()
       else if(rightMotorScaling < minScaling)
         rightMotorScaling = minScaling;
     }
+
+    // When motor speeds are different, the robot should turn. However, it turns out
+    // that--due to friction--the robot turns less than expected since the faster motor accelerates the slower,
+    // and the slower de-accelerates the faster. As a result, the robot is barely turning. Thus,
+    // we have to artificially increase the difference of the motor speeds such that the robot turns as
+    // expected by the difference in the motor speed setpoints. 
+    if(rightSpeed * leftSpeed > 0 && rightObs* leftObs > 0 && rightSpeed * rightObs > 0)
+    {
+      diffMotorScaling += diffScalingLearnConstant * (abs(rightSpeed - leftSpeed) - abs(rightSpeed - leftSpeed));
+      if(diffMotorScaling > maxDiffMotorScaling)
+        diffMotorScaling = maxDiffMotorScaling;
+      else if(diffMotorScaling < minDiffMotorScaling)
+        diffMotorScaling = minDiffMotorScaling;
+    }
   }
   lastTime_ms = time_ms;
 
   // Set motor speed
-  motors.SetLeftSpeed(leftMotorScaling*leftSpeed * maxMotorRaw / maxMotorSpeed);
-  motors.SetRightSpeed(rightMotorScaling*rightSpeed * maxMotorRaw / maxMotorSpeed);
+  lastSaturated = false;
+  double meanSpeed = (leftSpeed + rightSpeed) / 2.0;
+  lastSaturated |= motors.SetLeftSpeed(leftMotorScaling*(meanSpeed + diffMotorScaling * (leftSpeed-meanSpeed)) * maxMotorRaw / maxMotorSpeed);
+  lastSaturated |= motors.SetRightSpeed(rightMotorScaling*(meanSpeed + diffMotorScaling * (rightSpeed-meanSpeed))  * maxMotorRaw / maxMotorSpeed);
 
   // Run sensors
   rightSuperSonic.Run();
@@ -195,6 +215,10 @@ void ProfikumDevice::Run()
     outputProcessor(com::ProfikumOutput::rightEncoderMillimeters, encoders.GetMillimetersRight());
     outputProcessor(com::ProfikumOutput::leftEncoderMillimetersPerSecond, leftObs);
     outputProcessor(com::ProfikumOutput::rightEncoderMillimetersPerSecond, rightObs);
+    // debug
+    outputProcessor(com::ProfikumOutput::scalingLeftMotor, leftMotorScaling * 100);
+    outputProcessor(com::ProfikumOutput::scalingRightMotor, rightMotorScaling * 100);
+    outputProcessor(com::ProfikumOutput::scalingDiffMotor, diffMotorScaling * 100);
   }
 }
 }

@@ -53,6 +53,10 @@ private:
     volatile int16_t rightEncoderMillimeters{0};
     volatile int16_t leftEncoderMillimetersPerSecond{0};
     volatile int16_t rightEncoderMillimetersPerSecond{0};
+    // Debug
+    volatile int16_t scalingLeftMotor{-1};
+    volatile int16_t scalingRightMotor{-1};
+    volatile int16_t scalingDiffMotor{-1};
 
     std::unique_ptr<profinet::ProfinetControl> profinetInstance;
 
