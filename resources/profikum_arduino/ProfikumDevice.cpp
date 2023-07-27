@@ -134,16 +134,16 @@ bool ProfikumDevice::ProcessInput(com::ProfikumInput command, int16_t value)
 
 void ProfikumDevice::Run()
 {
-  long time_us = micros();
+  long time_ms = millis();
 
   // Read current speed of motors
-  int16_t leftObs = encoders.GetMillimetersPerSecondLeft();
+  int16_t leftObs  = encoders.GetMillimetersPerSecondLeft();
   int16_t rightObs = encoders.GetMillimetersPerSecondRight();
 
   // Inner control loop ensuring that the motor speed converges to the set speed
-  if(lastTime_us > 0)
+  if(lastTime_ms > 0)
   {
-    double dt = (time_us - lastTime_us)*1.0e-6; // in s
+    double dt = (time_ms - lastTime_ms)*1.0e-3; // in s
     if(abs(leftSpeed) > 0 && abs(leftObs) > 0)
     {
       leftMotorScaling += scalingLearnConstant * (leftSpeed - leftObs)*dt;
@@ -161,7 +161,7 @@ void ProfikumDevice::Run()
         rightMotorScaling = minScaling;
     }
   }
-  lastTime_us = time_us;
+  lastTime_ms = time_ms;
 
   // Set motor speed
   motors.SetLeftSpeed(leftMotorScaling*leftSpeed * maxMotorRaw / maxMotorSpeed);

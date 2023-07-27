@@ -62,7 +62,7 @@ void loop()
 }
 
 const char connectSound[] PROGMEM = "!C8E32";
-const char disconnectSound[] PROGMEM = "!E32C4";
+const char disconnectSound[] PROGMEM = "!E16C4";
 
 /*
   Called whenever new data comes in the hardware serial RX. This
@@ -75,7 +75,7 @@ void receiveSerial()//serialEvent()
   static int firstMessage = 0;
   static int secondMessage = 0;
   static bool online = false;
-  static long lastTimeReceived_us = 0;
+  static long lastTimeReceived_ms = 0;
   
   bool anyComplete = false; 
   while(SERIAL_PORT.available()>=1)
@@ -112,17 +112,17 @@ void receiveSerial()//serialEvent()
   }
 
   // Check if we are still connected.
-  long time_us = micros();
+  long time_ms = millis();
   if(anyComplete)
   {
-    lastTimeReceived_us = time_us;
+    lastTimeReceived_ms = time_ms;
     if(!online)
     {
       online = true;
       buzzer.playFromProgramSpace(connectSound);
     }
   }
-  else if(online && time_us-lastTimeReceived_us > 500e3)
+  else if(online && time_ms-lastTimeReceived_ms > 500)
   {
     // stop motor
     controller.ProcessInput(profikum::com::ProfikumInput::error, 0);
