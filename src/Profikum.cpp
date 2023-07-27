@@ -53,7 +53,7 @@ bool Profikum::InitializeProfinet(const std::string_view& mainNetworkInterface)
     device.properties.deviceProductFamily = "robots";
     // profinet name
     device.properties.stationName = "profikum";        
-    device.properties.numSlots = 4;
+    device.properties.numSlots = 6;
     
     // Current software version of device.
     device.properties.swRevMajor = 0;

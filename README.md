@@ -67,11 +67,16 @@ Steps:
 	
 	[Service]
 	Type=idle
-	WorkingDirectory=/home/username/profikum/temp
-	# Wait 10s upon reboot to ensure wifi is up and running
+    	# Replace with path where temporary data of profikum should be storred.
+	WorkingDirectory=/home/lektor
+	# Wait 10s upon reboot to ensure profikum is not interferring with BananaPi startup (probably via the Serial Port communication).
+        # Depending on the setup, you might try to remove this line, but it can happen that the OS is then not loading probably (->test it!)
 	ExecStartPre=/bin/sleep 10
-	# replace path to whereever you installed profikum
-	ExecStart=/usr/bin/sudo profikum -s -e ./ -i wlan0 -u /dev/ttyS3 # For BananaPi. Use /dev/ttyACM0 on an Raspberry instead
+	# Start profikum.
+        # The option -i specifies the network interface over which the Profinet connection to the PLC should be established. Typically eth0 or wlan0.
+        # The option -u specifies the serial port which should be used to communicate to the ZumoBot. Use e.g. /dev/ttyACM0 on a RaspberryPi 4 to use
+        # a virtual serial port (USB), or /dev/ttyS3 on a BananaPi M2 zero to use serial communication via the respective pin-out.
+	ExecStart=/usr/bin/sudo profikum -s -i wlan0 -u /dev/ttyS3 # For BananaPi. Use /dev/ttyACM0 on an Raspberry instead
 	
 	[Install]
 	WantedBy=default.target

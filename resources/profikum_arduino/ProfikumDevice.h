@@ -42,7 +42,7 @@ private:
   int16_t leftSpeed{0};
   int16_t rightSpeed{0};
   static constexpr int16_t maxMotorRaw{400};
-  static constexpr int16_t maxMotorSpeed{60}; // mm/s
+  static constexpr int16_t maxMotorSpeed{600}; // mm/s
   double leftMotorScaling{1.0};
   double rightMotorScaling{1.0};
   static constexpr double maxScaling{2.0};
