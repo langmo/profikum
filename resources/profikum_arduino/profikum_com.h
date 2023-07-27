@@ -90,7 +90,11 @@ enum class ProfikumOutput: char
   leftEncoderMillimeters = 'l',
   rightEncoderMillimeters = 'r',
   leftEncoderMillimetersPerSecond = 's',
-  rightEncoderMillimetersPerSecond = 't'
+  rightEncoderMillimetersPerSecond = 't',
+  // Debug
+  scalingLeftMotor = '1',
+  scalingRightMotor = '2',
+  scalingDiffMotor = '3'
 }; 
 bool constexpr IsProfikumOutput(char v)
 {
@@ -100,7 +104,9 @@ bool constexpr IsProfikumOutput(char v)
     ProfikumOutput::magnetometerX, ProfikumOutput::magnetometerY , ProfikumOutput::magnetometerZ,
     ProfikumOutput::rightUltrasoundDistance, ProfikumOutput::leftUltrasoundDistance,
     ProfikumOutput::leftEncoderMillimeters, ProfikumOutput::rightEncoderMillimeters,
-    ProfikumOutput::leftEncoderMillimetersPerSecond, ProfikumOutput::rightEncoderMillimetersPerSecond>;
+    ProfikumOutput::leftEncoderMillimetersPerSecond, ProfikumOutput::rightEncoderMillimetersPerSecond,
+    ProfikumOutput::scalingLeftMotor, ProfikumOutput::scalingRightMotor, ProfikumOutput::scalingDiffMotor>;
+  
   return TestCheck::IsValue(v);
 }
 ProfikumOutput constexpr ToProfikumOutput(char v)

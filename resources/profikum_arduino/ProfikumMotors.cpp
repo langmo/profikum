@@ -65,10 +65,11 @@ void ProfikumMotors::FlipRightMotor(bool flip)
 }
 
 // set speed for left motor; speed is a number between -400 and 400
-void ProfikumMotors::SetLeftSpeed(int16_t speed)
+bool ProfikumMotors::SetLeftSpeed(int16_t speed)
 {
     bool reverse = 0;
-
+    bool saturated = false;
+    
     if (speed < 0)
     {
         speed = -speed; // Make speed a positive quantity.
@@ -77,17 +78,20 @@ void ProfikumMotors::SetLeftSpeed(int16_t speed)
     if (speed > 400)    // Max PWM duty cycle.
     {
         speed = 400;
+        saturated = true;
     }
 
     OCR1B = speed;
 
     FastGPIO::Pin<DIR_L>::setOutput(reverse ^ flipLeft);
+    return saturated;
 }
 
 // set speed for right motor; speed is a number between -400 and 400
-void ProfikumMotors::SetRightSpeed(int16_t speed)
+bool ProfikumMotors::SetRightSpeed(int16_t speed)
 {
     bool reverse = 0;
+    bool saturated = false;
 
     if (speed < 0)
     {
@@ -97,11 +101,13 @@ void ProfikumMotors::SetRightSpeed(int16_t speed)
     if (speed > 400)     // Max PWM duty cycle.
     {
         speed = 400;
+        saturated = true;
     }
 
     OCR1A = speed;
 
     FastGPIO::Pin<DIR_R>::setOutput(reverse ^ flipRight);
+    return saturated;
 }
 
 // set speed for both motors
