@@ -131,7 +131,10 @@ bool ProfikumDevice::ProcessInput(com::ProfikumInput command, int16_t value)
 }
 
 
-
+template <typename T> int sgn(T val) 
+{
+    return (T(0) < val) - (val < T(0));
+}
 void ProfikumDevice::Run()
 {
   // Anti wind-up: Only learn correction factors for motors if their input isn't saturated.
@@ -170,9 +173,9 @@ void ProfikumDevice::Run()
     // and the slower de-accelerates the faster. As a result, the robot is barely turning. Thus,
     // we have to artificially increase the difference of the motor speeds such that the robot turns as
     // expected by the difference in the motor speed setpoints. 
-    if(rightSpeed * leftSpeed > 0 && rightObs* leftObs > 0 && rightSpeed * rightObs > 0)
+    if(rightSpeed * leftSpeed > 0 && rightObs* leftObs > 0 && rightSpeed * rightObs > 0 && abs(rightSpeed - leftSpeed) >=5)
     {
-      diffMotorScaling += diffScalingLearnConstant * (abs(rightSpeed - leftSpeed) - abs(rightSpeed - leftSpeed));
+      diffMotorScaling += diffScalingLearnConstant * (abs(rightSpeed - leftSpeed) - sgn(rightSpeed - leftSpeed)*sgn(rightObs - leftObs)*abs(rightObs - leftObs));
       if(diffMotorScaling > maxDiffMotorScaling)
         diffMotorScaling = maxDiffMotorScaling;
       else if(diffMotorScaling < minDiffMotorScaling)

@@ -47,12 +47,12 @@ private:
   double rightMotorScaling{1.0};
   static constexpr double maxScaling{2.0};
   static constexpr double minScaling{0.5};
-  static constexpr double scalingLearnConstant{1.0/maxMotorSpeed/2}; // in 1/mm
+  static constexpr double scalingLearnConstant{1.0/maxMotorSpeed/5}; // in 1/mm
   double diffMotorScaling{1.0};
   static constexpr double maxDiffMotorScaling{2.0};
   static constexpr double minDiffMotorScaling{1.0};
   static constexpr double diffReference{25}; //mm/s
-  static constexpr double diffScalingLearnConstant{1.0/diffReference/2}; // in 1/mm
+  static constexpr double diffScalingLearnConstant{1.0/diffReference/5}; // in 1/mm
   
   long lastTime_ms{0};
   void (*outputProcessor)(com::ProfikumOutput, int16_t) {nullptr};
