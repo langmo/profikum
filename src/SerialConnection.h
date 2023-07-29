@@ -30,6 +30,7 @@ public:
     bool Send(const uint8_t* buffer, std::size_t numBytes);
 
     bool Read(uint8_t* buffer, std::size_t maxBytes, std::size_t* numBytes);
+    bool flush();
 private:
     // -1 if serial port connection was not established or is closed.
     int connection{-1};

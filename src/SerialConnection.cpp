@@ -64,9 +64,9 @@ bool SerialConnection::Connect(std::string serialPort)
     tty.c_cc[VTIME] = 0; // (deciseconds), return immediately if no data is available.
     tty.c_cc[VMIN] = 0;
 
-    // Set in/out baud rate to be 9600
-    cfsetispeed(&tty, B9600);
-    cfsetospeed(&tty, B9600);
+    // Set in/out baud rate to be 38400
+    cfsetispeed(&tty, B38400);
+    cfsetospeed(&tty, B38400);
 
     // Save tty settings, also checking for error
     if (tcsetattr(serial_port, TCSANOW, &tty) != 0)
@@ -100,6 +100,12 @@ bool SerialConnection::Send(const uint8_t* buffer, std::size_t numBytes)
         printf("Error writing: %s", strerror(errno));
         return false;
     }
+    return true;
+}
+bool SerialConnection::flush()
+{
+    if(!IsConnected())
+        return false;
     fsync(connection);
     return true;
 }

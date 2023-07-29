@@ -357,6 +357,7 @@ bool Profikum::SendSerial(SerialConnection& serialConnection)
 
     }
     uint8_t buffer[4];
+    bool anySend = false;
     if(speedLeftTemp != INT16_MAX)
     {
         // Left motor
@@ -368,6 +369,7 @@ bool Profikum::SendSerial(SerialConnection& serialConnection)
         {
             return false;
         }
+        anySend = true;
     }
 
     if(speedRightTemp != INT16_MAX)
@@ -380,7 +382,10 @@ bool Profikum::SendSerial(SerialConnection& serialConnection)
         {
             return false;
         }
+        anySend = true;
     }
+    if(anySend)
+        return serialConnection.flush();
     return true;
 }
 bool Profikum::ReceiveSerial(SerialConnection& serialConnection)

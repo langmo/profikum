@@ -47,7 +47,7 @@ void setup()
   Wire.begin();
   
   pinMode(LED_PIN, OUTPUT);
-  SERIAL_PORT.begin(9600, SERIAL_8N1);
+  SERIAL_PORT.begin(38400, SERIAL_8N1);
   while (!SERIAL_PORT) 
   {
     // busy wait for serial port to connect.
@@ -57,6 +57,7 @@ void setup()
 void receiveSerial();
 void loop()
 {
+  SERIAL_PORT.flush();
   controller.Run();
   receiveSerial();
 }
