@@ -145,50 +145,50 @@ void ProfikumDevice::Run()
   int16_t leftObs  = encoders.GetMillimetersPerSecondLeft();
   int16_t rightObs = encoders.GetMillimetersPerSecondRight();
 
-  // Inner control loop ensuring that the motor speed converges to the set speed
+  // Inner control loop ensuring that the motor speed converges to the set speed.
+  // We only learn if both motors are active and move into the same direction, and
+  // if neither of the motors were saturated.
   double dt = (time_ms - lastTime_ms)*1.0e-3; // in s
-  if(lastTime_ms > 0 && !lastSaturated)
+  if(lastTime_ms > 0 && !lastSaturated && lastLeftSpeed*lastRightSpeed > 0)
   {
     // Speed of a motor varies depending on hardware, conitions, ...
     // Learn a scaling constant such that motor speeds converge to a constant setpoint
-    if(abs(leftSpeed) > 0 && abs(leftObs) > 0)
-    {
-      leftMotorScaling += scalingLearnConstant * (leftSpeed - leftObs)*dt;
-      if(leftMotorScaling > maxScaling)
-        leftMotorScaling = maxScaling;
-      else if(leftMotorScaling < minScaling)
-        leftMotorScaling = minScaling;
-    }
-    if(abs(rightSpeed) > 0 && abs(rightObs) > 0)
-    {
-      rightMotorScaling += scalingLearnConstant * (rightSpeed - rightObs)*dt;
-      if(rightMotorScaling > maxScaling)
-        rightMotorScaling = maxScaling;
-      else if(rightMotorScaling < minScaling)
-        rightMotorScaling = minScaling;
-    }
+    leftMotorScaling += scalingLearnConstant * (lastLeftSpeed - leftObs)*dt;
+    if(leftMotorScaling > maxScaling)
+      leftMotorScaling = maxScaling;
+    else if(leftMotorScaling < minScaling)
+      leftMotorScaling = minScaling;
+  
+    rightMotorScaling += scalingLearnConstant * (lastRightSpeed - rightObs)*dt;
+    if(rightMotorScaling > maxScaling)
+      rightMotorScaling = maxScaling;
+    else if(rightMotorScaling < minScaling)
+      rightMotorScaling = minScaling;
+  
 
     // When motor speeds are different, the robot should turn. However, it turns out
     // that--due to friction--the robot turns less than expected since the faster motor accelerates the slower,
     // and the slower de-accelerates the faster. As a result, the robot is barely turning. Thus,
     // we have to artificially increase the difference of the motor speeds such that the robot turns as
     // expected by the difference in the motor speed setpoints. 
-    if(rightSpeed * leftSpeed > 0 && rightObs* leftObs > 0 && rightSpeed * rightObs > 0 && abs(rightSpeed - leftSpeed) >=5)
+    if(abs(lastRightSpeed - lastLeftSpeed) >=5)
     {
-      diffMotorScaling += diffScalingLearnConstant * (abs(rightSpeed - leftSpeed) - sgn(rightSpeed - leftSpeed)*sgn(rightObs - leftObs)*abs(rightObs - leftObs));
+      diffMotorScaling += diffScalingLearnConstant * (abs(lastRightSpeed - lastLeftSpeed) - sgn(lastRightSpeed - lastLeftSpeed)*sgn(rightObs - leftObs)*abs(rightObs - leftObs));
       if(diffMotorScaling > maxDiffMotorScaling)
         diffMotorScaling = maxDiffMotorScaling;
       else if(diffMotorScaling < minDiffMotorScaling)
         diffMotorScaling = minDiffMotorScaling;
     }
   }
-  lastTime_ms = time_ms;
-
+  
   // Set motor speed
   lastSaturated = false;
   double meanSpeed = (leftSpeed + rightSpeed) / 2.0;
   lastSaturated |= motors.SetLeftSpeed(leftMotorScaling*(meanSpeed + diffMotorScaling * (leftSpeed-meanSpeed)) * maxMotorRaw / maxMotorSpeed);
   lastSaturated |= motors.SetRightSpeed(rightMotorScaling*(meanSpeed + diffMotorScaling * (rightSpeed-meanSpeed))  * maxMotorRaw / maxMotorSpeed);
+  lastLeftSpeed = leftSpeed;
+  lastRightSpeed = rightSpeed;
+  lastTime_ms = time_ms;
 
   // Run sensors
   rightSuperSonic.Run();

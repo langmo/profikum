@@ -41,6 +41,8 @@ private:
   //Outputs
   int16_t leftSpeed{0};
   int16_t rightSpeed{0};
+  int16_t lastLeftSpeed{0};
+  int16_t lastRightSpeed{0};
   static constexpr int16_t maxMotorRaw{400};
   static constexpr int16_t maxMotorSpeed{480}; // mm/s
   double leftMotorScaling{1.0};
@@ -49,7 +51,7 @@ private:
   static constexpr double minScaling{0.5};
   static constexpr double scalingLearnConstant{1.0/maxMotorSpeed/5}; // in 1/mm
   double diffMotorScaling{1.0};
-  static constexpr double maxDiffMotorScaling{2.0};
+  static constexpr double maxDiffMotorScaling{2.3};
   static constexpr double minDiffMotorScaling{1.0};
   static constexpr double diffReference{25}; //mm/s
   static constexpr double diffScalingLearnConstant{1.0/diffReference/5}; // in 1/mm

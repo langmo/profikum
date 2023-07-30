@@ -62,7 +62,7 @@ void loop()
   receiveSerial();
 }
 
-const char connectSound[] PROGMEM = "!C8E32";
+const char connectSound[] PROGMEM = "!C8E16";
 const char disconnectSound[] PROGMEM = "!E16C4";
 
 /*
