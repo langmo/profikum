@@ -29,7 +29,7 @@
 // Uncomment the next line to additionally send any serial data over SERIAL_PORT_DEBUG. 
 //#define DEBUG
 // Which serial port to use. Set to "Serial" for communication via microUSB, and to "Serial1" for GPIO based com.
-#define SERIAL_PORT_DEBUG Serial
+#define SERIAL_DEBUG_PORT Serial
 #define SERIAL_PORT Serial1
 
 // Forward declactions
@@ -48,16 +48,28 @@ void setup()
   
   pinMode(LED_PIN, OUTPUT);
   SERIAL_PORT.begin(38400, SERIAL_8N1);
-  while (!SERIAL_PORT) 
-  {
-    // busy wait for serial port to connect.
-  }
+  
+  #ifdef DEBUG
+    SERIAL_DEBUG_PORT.begin(38400, SERIAL_8N1);
+    while (!SERIAL_PORT && !SERIAL_DEBUG_PORT) 
+    {
+      // busy wait for serial port to connect.
+    }
+  #else
+    while (!SERIAL_PORT) 
+    {
+      // busy wait for serial port to connect.
+    }
+  #endif
   controller.Init(&serialOutput);
 }
 void receiveSerial();
 void loop()
 {
   SERIAL_PORT.flush();
+  #ifdef DEBUG
+    SERIAL_DEBUG_PORT.flush();
+  #endif
   controller.Run();
   receiveSerial();
 }
@@ -144,10 +156,10 @@ void serialOutput(profikum::com::ProfikumOutput command, int16_t value)
   SERIAL_PORT.write(profikum::com::stopByte);
 
   #ifdef DEBUG
-    SERIAL_PORT_DEBUG.write(profikum::com::FromProfikumOutput(command));
+    SERIAL_DEBUG_PORT.write(profikum::com::FromProfikumOutput(command));
     // Little endian to network/big endian conversion
-    SERIAL_PORT_DEBUG.write((value >> 8 ) & 0xFF);
-    SERIAL_PORT_DEBUG.write((value      ) & 0xFF);
-    SERIAL_PORT_DEBUG.write(profikum::com::stopByte);
+    SERIAL_DEBUG_PORT.write((value >> 8 ) & 0xFF);
+    SERIAL_DEBUG_PORT.write((value      ) & 0xFF);
+    SERIAL_DEBUG_PORT.write(profikum::com::stopByte);
   #endif
 }

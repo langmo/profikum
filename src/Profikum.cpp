@@ -390,26 +390,34 @@ bool Profikum::SendSerial(SerialConnection& serialConnection)
 }
 bool Profikum::ReceiveSerial(SerialConnection& serialConnection)
 {
-    static uint8_t buffer[4];
-    static size_t bufferPos{0};
-    std::size_t numBytes{};
+    static uint8_t commandBuffer[4];
+    static size_t commandBufferPos{0};
+    constexpr std::size_t maxBytes{64};
+    static uint8_t buffer[maxBytes];
     while(true)
     {
-        serialConnection.Read(buffer+bufferPos, 1, &numBytes);
+        std::size_t numBytes;
+        serialConnection.Read(buffer, maxBytes, &numBytes);
         if(numBytes <= 0)
             break;
-        else if(bufferPos == 0 && buffer[0] != profikum::com::stopByte)
-            continue;
-        bufferPos++;
-        if(bufferPos == 4)
+        for(size_t i=0; i<numBytes; i++)
         {
-            int16_t val;
-            if(profinet::fromProfinet<int16_t, sizeof(int16_t)>(buffer+2, 2, &val))
-                InterpretCommand(profikum::com::ToProfikumOutput(buffer[1]), val);
-            else
-                InterpretCommand(profikum::com::ProfikumOutput::error, 0);
-            bufferPos=0;
+            commandBuffer[commandBufferPos] = buffer[i];
+            if(commandBufferPos == 0 && commandBuffer[0] != profikum::com::stopByte)
+                continue;
+            commandBufferPos++;
+            if(commandBufferPos == 4)
+            {
+                int16_t val;
+                if(profinet::fromProfinet<int16_t, sizeof(int16_t)>(commandBuffer+2, 2, &val))
+                    InterpretCommand(profikum::com::ToProfikumOutput(commandBuffer[1]), val);
+                else
+                    InterpretCommand(profikum::com::ProfikumOutput::error, 0);
+                commandBufferPos=0;
+            }
         }
+        if(numBytes < maxBytes)
+            break;
     }
     return true;
 }

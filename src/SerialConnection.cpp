@@ -65,8 +65,18 @@ bool SerialConnection::Connect(std::string serialPort)
     tty.c_cc[VMIN] = 0;
 
     // Set in/out baud rate to be 38400
-    cfsetispeed(&tty, B38400);
-    cfsetospeed(&tty, B38400);
+    if(cfsetispeed(&tty, B38400) != 0)
+    {
+        printf("Error %i from cfsetispeed: %s\n", errno, strerror(errno));
+        close(serial_port);
+        return false;
+    }
+    if(cfsetospeed(&tty, B38400) != 0)
+    {
+        printf("Error %i from cfsetospeed: %s\n", errno, strerror(errno));
+        close(serial_port);
+        return false;
+    }
 
     // Save tty settings, also checking for error
     if (tcsetattr(serial_port, TCSANOW, &tty) != 0)
