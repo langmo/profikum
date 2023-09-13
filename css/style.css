@@ -331,13 +331,6 @@ img.faq
 
 @media only screen and (min-width: 768px) 
 {
-	body 
-	{
-		background-image: url('https://langmo.github.io/img/right_column.jpg');
-		background-repeat: no-repeat;
-		background-attachment: fixed;
-		background-position: right center; 
-	}
 	div#footer
 	{
 		margin: 20px 200px 5px 0;
