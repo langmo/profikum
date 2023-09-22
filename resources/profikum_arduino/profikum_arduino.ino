@@ -29,7 +29,7 @@
 // Uncomment the next line to additionally send any serial data over SERIAL_PORT_DEBUG. 
 //#define DEBUG
 // Which serial port to use. Set to "Serial" for communication via microUSB, and to "Serial1" for GPIO based com.
-#define SERIAL_DEBUG_PORT Serial
+//#define SERIAL_DEBUG_PORT Serial
 #define SERIAL_PORT Serial1
 
 // Forward declactions
